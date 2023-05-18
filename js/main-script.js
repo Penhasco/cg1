@@ -1,13 +1,16 @@
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
-var scene, camera, renderer, clock, deltaTime, totalTime;
+var scene, renderer, clock, deltaTime, totalTime, camera, camera1, camera2, camera3, camera4, camera5;
+
 
 
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
 function createScene(){
+    'use strict';
+
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
@@ -18,9 +21,39 @@ function createScene(){
 //////////////////////
 function createCamera(){
     'use strict';
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-}
+    
+    //camera1 (frontal view)
+    camera1 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+    camera1.position.set(0, 0, 100);
+    camera1.lookAt(scene.position);
+    scene.add(camera1);
 
+    //camera2 (lateral view)
+    camera2 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+    camera2.position.set(100, 0, 0);
+    camera2.lookAt(scene.position);
+    scene.add(camera2);
+
+    //camera3 (top view)
+    camera3 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+    camera3.position.set(0, 100, 0);
+    camera3.lookAt(scene.position);
+    scene.add(camera3);
+
+    //camera4 (isometric perspective - orthogonal projection)
+    camera4 = new THREE.OrthographicCamera(-window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, -window.innerHeight / 2, 1, 1000);
+    camera4.position.set(100, 100, 100);
+    camera4.lookAt(scene.position);
+    scene.add(camera4);
+
+    //camera5 (isometric perspective - perspective projection)
+    camera5 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+    camera5.position.set(100, 100, 100);
+    camera5.lookAt(scene.position);
+    scene.add(camera5);
+
+    camera = camera1;
+}
 
 /////////////////////
 /* CREATE LIGHT(S) */
@@ -59,7 +92,7 @@ function update(){
 /////////////
 function render() {
     'use strict';
-    renderer.render(scene, camera);
+    renderer.render(scene, camera1);
 
 }
 
@@ -75,16 +108,25 @@ function init() {
 
     createScene();
     createCamera();
+
+
     /*createLights();
     createObjects();*/
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+
+      // Check if the canvas container element exists
+    var canvasContainer = document.getElementById('canvas-container');
+    if (canvasContainer) {
+        canvasContainer.appendChild(renderer.domElement);
+    } else {
+        console.error("The 'canvas-container' element was not found.");
+    }
 
     window.addEventListener("resize", onResize);
-    window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("keydown", onKeyDown);
 
     render();
     animate();
@@ -97,6 +139,10 @@ function init() {
 function animate() {
     'use strict';
 
+    requestAnimationFrame(animate);
+    update();
+    render();
+
 }
 
 ////////////////////////////
@@ -105,20 +151,40 @@ function animate() {
 function onResize() { 
     'use strict';
 
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 ///////////////////////
 /* KEY DOWN CALLBACK */
 ///////////////////////
-function onKeyDown(e) {
+
+function onKeyDown(e){
     'use strict';
 
+        switch(e.keyCode){
+            case 49:
+                camera = camera1;
+                break;
+            case 50:
+                camera = camera2;
+                break;
+            case 51:
+                camera = camera3;
+                break;
+            case 52:
+                camera = camera4;
+                break;
+            case 53:
+                camera = camera5;
+                break;
+        }
 }
-
 ///////////////////////
 /* KEY UP CALLBACK */
 ///////////////////////
 function onKeyUp(e){
     'use strict';
-
 }
+
