@@ -2,7 +2,13 @@
 /* GLOBAL VARIABLES */
 //////////////////////
 var scene, renderer, clock, deltaTime, totalTime, camera, camera1, camera2, camera3, camera4, camera5;
-
+var trailer = new THREE.Object3D();
+var trailerPosition = new THREE.Vector3(0, 8, 0);
+var trailerSpeed = 1;
+var leftKeyPressed = false;
+var rightKeyPressed = false;
+var upKeyPressed = false;
+var downKeyPressed = false;
 
 
 /////////////////////
@@ -88,13 +94,12 @@ function addWheel(obj, x, y, z) {
 function createTrailer(x, y, z) {
     'use strict';
 
-    var trailer = new THREE.Object3D();
-
     addContainer(trailer, 0, 0, 0);
     addWheel(trailer, 15, -1, -8);
     addWheel(trailer, 15, -1, 8);
     addWheel(trailer, 25, -1, 8);
     addWheel(trailer, 25, -1, -8);
+    // Missing link piece object in trailer 
 
     scene.add(trailer);
     trailer.position.x = x;
@@ -124,6 +129,22 @@ function handleCollisions(){
 function update(){
     'use strict';
 
+    // Move the trailer based on arrow key input
+    if (leftKeyPressed) {
+        trailerPosition.z += trailerSpeed;
+    }
+    if (rightKeyPressed) {
+        trailerPosition.z -= trailerSpeed;
+    }
+    if (upKeyPressed) {
+        trailerPosition.x -= trailerSpeed;
+    }
+    if (downKeyPressed) {
+        trailerPosition.x += trailerSpeed;
+    }
+
+    // Update the position of the trailer
+    trailer.position.copy(trailerPosition);
 }
 
 /////////////
@@ -166,7 +187,7 @@ function init() {
     }
 
     window.addEventListener("resize", onResize);
-    //window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("keyup", onKeyUp);
     window.addEventListener("keydown", onKeyDown);
 
     render();
@@ -227,6 +248,18 @@ function onKeyDown(e){
                     }
                 });
                 break;
+            case 37: // Left arrow key
+                leftKeyPressed = true;
+                break;
+            case 39: // Right arrow key
+                rightKeyPressed = true;
+                break;
+            case 38: // Up arrow key
+                upKeyPressed = true;
+                break;
+            case 40: // Down arrow key
+                downKeyPressed = true;
+                break;
         }
 }
 ///////////////////////
@@ -234,5 +267,21 @@ function onKeyDown(e){
 ///////////////////////
 function onKeyUp(e){
     'use strict';
+
+    switch(e.keyCode){
+        case 37: // Left arrow key
+            leftKeyPressed = false;
+            break;
+        case 39: // Right arrow key
+            rightKeyPressed = false;
+            break;
+        case 38: // Up arrow key
+            upKeyPressed = false;
+            break;
+        case 40: // Down arrow key
+            downKeyPressed = false;
+            break;
+    }
+
 }
 
