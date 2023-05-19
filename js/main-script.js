@@ -3,6 +3,7 @@
 //////////////////////
 var scene, renderer, clock, deltaTime, totalTime, camera, camera1, camera2, camera3, camera4, camera5;
 var trailer = new THREE.Object3D();
+var robot = new THREE.Object3D();
 var trailerPosition = new THREE.Vector3(0, 8, 0);
 var trailerSpeed = 1;
 var leftKeyPressed = false;
@@ -62,10 +63,6 @@ function createCamera(){
 
 }
 
-/////////////////////
-/* CREATE LIGHT(S) */
-/////////////////////
-
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
@@ -91,6 +88,36 @@ function addWheel(obj, x, y, z) {
     obj.add(mesh);
 }
 
+function addHead(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.BoxGeometry(5, 5, 5);
+    let material = new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addEye(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.BoxGeometry(1, 1, 1);
+    let material = new THREE.MeshBasicMaterial({ color: 0xFF0000, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addAntena(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.BoxGeometry(1, 3, 1);
+    let material = new THREE.MeshBasicMaterial({ color: 0xFF0000, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
 function createTrailer(x, y, z) {
     'use strict';
 
@@ -107,13 +134,22 @@ function createTrailer(x, y, z) {
     trailer.position.z = z;
 }
 
-//////////////////////
-/* CHECK COLLISIONS */
-//////////////////////
-function checkCollisions(){
+function createRobot(x, y, z) {
     'use strict';
 
+    addHead(robot, 0, 40, 0);
+    addEye(robot, 1, 40, 2);
+    addEye(robot, -1, 40, 2);
+    addAntena(robot, 1, 43, 0);
+    addAntena(robot, -1, 43, 0);
+
+
+    scene.add(robot);
+    robot.position.x = x;
+    robot.position.y = y;
+    robot.position.z = z;
 }
+
 
 ///////////////////////
 /* HANDLE COLLISIONS */
@@ -165,15 +201,14 @@ function init() {
     clock = new THREE.Clock();
     deltaTime = 0;
     totalTime = 0;
-
+    
     createScene();
     createCamera();
     camera = camera1;
+
     createTrailer(0,8,0);
+    createRobot(0,0,0);
 
-
-    /*createLights();
-    createObjects();*/
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
