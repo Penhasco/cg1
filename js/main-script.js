@@ -12,7 +12,9 @@ function createScene(){
     'use strict';
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+    scene.background = new THREE.Color(0xffffff);
+
+    scene.add(new THREE.AxisHelper(100));
 
 }
 
@@ -52,7 +54,6 @@ function createCamera(){
     camera5.lookAt(scene.position);
     scene.add(camera5);
 
-    camera = camera1;
 }
 
 /////////////////////
@@ -62,6 +63,44 @@ function createCamera(){
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
+function addContainer(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.BoxGeometry(60, 20, 20);
+    let material = new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+    
+}
+
+function addWheel(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.CylinderGeometry(3,3,2,32);
+    let material = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y - 12, z)
+    mesh.rotation.x = Math.PI / 2; // Rotate the cylinder to lay down
+    obj.add(mesh);
+}
+
+function createTrailer(x, y, z) {
+    'use strict';
+
+    var trailer = new THREE.Object3D();
+
+    addContainer(trailer, 0, 0, 0);
+    addWheel(trailer, 15, -1, -8);
+    addWheel(trailer, 15, -1, 8);
+    addWheel(trailer, 25, -1, 8);
+    addWheel(trailer, 25, -1, -8);
+
+    scene.add(trailer);
+    trailer.position.x = x;
+    trailer.position.y = y;
+    trailer.position.z = z;
+}
 
 //////////////////////
 /* CHECK COLLISIONS */
@@ -92,7 +131,7 @@ function update(){
 /////////////
 function render() {
     'use strict';
-    renderer.render(scene, camera1);
+    renderer.render(scene, camera);
 
 }
 
@@ -108,6 +147,8 @@ function init() {
 
     createScene();
     createCamera();
+    camera = camera1;
+    createTrailer(0,8,0);
 
 
     /*createLights();
@@ -125,7 +166,7 @@ function init() {
     }
 
     window.addEventListener("resize", onResize);
-    window.addEventListener("keyup", onKeyUp);
+    //window.addEventListener("keyup", onKeyUp);
     window.addEventListener("keydown", onKeyDown);
 
     render();
@@ -178,6 +219,13 @@ function onKeyDown(e){
                 break;
             case 53:
                 camera = camera5;
+                break;
+            case 54: 
+                scene.traverse(function (node) {
+                    if (node instanceof THREE.Mesh) {
+                        node.material.wireframe = !node.material.wireframe;
+                    }
+                });
                 break;
         }
 }
