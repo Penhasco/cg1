@@ -4,13 +4,13 @@
 var scene, renderer, clock, deltaTime, totalTime, camera, camera1, camera2, camera3, camera4, camera5;
 var trailer = new THREE.Object3D();
 var robot = new THREE.Object3D();
-var trailerPosition = new THREE.Vector3(0, 8, 0);
-var trailerSpeed = 1;
-var leftKeyPressed = false;
-var rightKeyPressed = false;
-var upKeyPressed = false;
-var downKeyPressed = false;
+var trailerPosition = new THREE.Vector3(40, 0, 0);
+const trailerSpeed = 0.5;
+var rotationSpeed = Math.PI / 180; // Rotation speed in radians per frame
+var keys = Array(256).fill(0);
 
+var footNodes = [];
+var legNodes = [];
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -74,7 +74,6 @@ function addContainer(obj, x, y, z) {
     let mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
     obj.add(mesh);
-    
 }
 
 function addWheel(obj, x, y, z) {
@@ -83,8 +82,18 @@ function addWheel(obj, x, y, z) {
     let geometry = new THREE.CylinderGeometry(3,3,2,32);
     let material = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: false });
     let mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y - 12, z)
+    mesh.position.set(x, y, z)
     mesh.rotation.x = Math.PI / 2; // Rotate the cylinder to lay down
+    obj.add(mesh);
+}
+
+function addLinkPiece(obj, x, y, z){
+    'use strict'
+
+    let geometry = new THREE.BoxGeometry(20,5,10);
+    let material = new THREE.MeshBasicMaterial({ color: 0x0047ab, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
     obj.add(mesh);
 }
 
@@ -92,7 +101,7 @@ function addHead(obj, x, y, z) {
     'use strict';
 
     let geometry = new THREE.BoxGeometry(5, 5, 5);
-    let material = new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: false });
+    let material = new THREE.MeshBasicMaterial({ color: 0x0047ab, wireframe: false });
     let mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -102,7 +111,7 @@ function addEye(obj, x, y, z) {
     'use strict';
 
     let geometry = new THREE.BoxGeometry(1, 1, 1);
-    let material = new THREE.MeshBasicMaterial({ color: 0xFF0000, wireframe: false });
+    let material = new THREE.MeshBasicMaterial({ color: 0xf0e68c, wireframe: false });
     let mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -112,21 +121,126 @@ function addAntena(obj, x, y, z) {
     'use strict';
 
     let geometry = new THREE.BoxGeometry(1, 3, 1);
-    let material = new THREE.MeshBasicMaterial({ color: 0xFF0000, wireframe: false });
+    let material = new THREE.MeshBasicMaterial({ color: 0x0047ab, wireframe: false });
     let mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
 
+function addShoulder(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 32);
+    let material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    mesh.rotation.x = Math.PI / 2; // Rotate the cylinder to lay down
+    obj.add(mesh);
+}
+
+function addArm(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.BoxGeometry(4, 10, 4);
+    let material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addExhaustPipe(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.CylinderGeometry(2, 2, 10, 32);
+    let material = new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addForearm(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.BoxGeometry(13, 4, 4);
+    let material = new THREE.MeshBasicMaterial({ color: 0x0047ab, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addTorso(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.BoxGeometry(10, 10, 20);
+    let material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addAbdomen(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.BoxGeometry(10, 5, 10);
+    let material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addWaist(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.BoxGeometry(10, 5, 20);
+    let material = new THREE.MeshBasicMaterial({ color: 0xedeade, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addThigh(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.BoxGeometry(6, 16, 6);
+    let material = new THREE.MeshBasicMaterial({ color: 0xedeade, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+
+    legNodes.push(mesh);
+}
+
+function addLeg(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.BoxGeometry(8, 14, 8);
+    let material = new THREE.MeshBasicMaterial({ color: 0x0047ab, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+}
+
+function addFoot(obj, x, y, z) {
+    'use strict';
+
+    let geometry = new THREE.BoxGeometry(10, 4, 8);
+    let material = new THREE.MeshBasicMaterial({ color: 0x0047ab, wireframe: false });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+
+    footNodes.push(mesh);
+}
+
 function createTrailer(x, y, z) {
     'use strict';
 
-    addContainer(trailer, 0, 0, 0);
-    addWheel(trailer, 15, -1, -8);
-    addWheel(trailer, 15, -1, 8);
-    addWheel(trailer, 25, -1, 8);
-    addWheel(trailer, 25, -1, -8);
-    // Missing link piece object in trailer 
+    addContainer(trailer, 40, 16, 0);
+    addWheel(trailer, 55, 3, -8);
+    addWheel(trailer, 55, 3, 8);
+    addWheel(trailer, 65, 3, 8);
+    addWheel(trailer, 65, 3, -8);
+    addLinkPiece(trailer, 56, 3.5, 0); // Missing link piece object in trailer 
 
     scene.add(trailer);
     trailer.position.x = x;
@@ -137,11 +251,34 @@ function createTrailer(x, y, z) {
 function createRobot(x, y, z) {
     'use strict';
 
-    addHead(robot, 0, 40, 0);
-    addEye(robot, 1, 40, 2);
-    addEye(robot, -1, 40, 2);
-    addAntena(robot, 1, 43, 0);
-    addAntena(robot, -1, 43, 0);
+    addHead(robot, 0, 22.5, 0);
+    addEye(robot, -2, 22.5, 1);
+    addEye(robot, -2, 22.5, -1);
+    addAntena(robot, 0, 25.5, 1);
+    addAntena(robot, 0, 25.5, -1);
+    addShoulder(robot, 0, 19, 11);
+    addShoulder(robot, 0, 19, -11);
+    addArm(robot, 0, 15, 13.5);
+    addArm(robot, 0, 15, -13.5);
+    // addExhaustPipe(robot, 0, 32, 10);
+    // addExhaustPipe(robot, 0, 32, -10);
+    addForearm(robot, -5, 8, 13.5);
+    addForearm(robot, -5, 8, -13.5);
+    addTorso(robot, 0, 15, 0);
+    addAbdomen(robot, 0, 7.5, 0);
+    addWaist(robot, 0, 2.5, 0);
+    addWheel(robot, 0, 2.5, 11.5)
+    addWheel(robot, 0, 2.5, -11.5)
+    addThigh(robot, 0, -8, 6);
+    addThigh(robot, 0, -8, -6);
+    addLeg(robot, 0, -23, 6);
+    addWheel(robot, 0, -20, 11.5);
+    addWheel(robot, 0, -28, 11,5);
+    addLeg(robot, 0, -23, -6);
+    addWheel(robot, 0, -20, -11.5);
+    addWheel(robot, 0, -28, -11,5);
+    addFoot(robot, -1, -31, 6);
+    addFoot(robot, -1, -31, -6);
 
 
     scene.add(robot);
@@ -165,22 +302,43 @@ function handleCollisions(){
 function update(){
     'use strict';
 
-    // Move the trailer based on arrow key input
-    if (leftKeyPressed) {
-        trailerPosition.z += trailerSpeed;
-    }
-    if (rightKeyPressed) {
-        trailerPosition.z -= trailerSpeed;
-    }
-    if (upKeyPressed) {
-        trailerPosition.x -= trailerSpeed;
-    }
-    if (downKeyPressed) {
-        trailerPosition.x += trailerSpeed;
+    if (keys[65] || keys[81]) {
+        for (let i = 0; i < footNodes.length; i++) {
+            let footNode = footNodes[i];
+            if (footNode.rotation.z <= Math.PI / 2 && footNode.rotation.z >= 0) {
+                footNode.rotation.z += (keys[65] - keys[81]) * rotationSpeed;
+            }
+            else if (footNode.rotation.z > Math.PI / 2) {footNode.rotation.z = Math.PI / 2;}
+            else if (footNode.rotation.z < 0) {footNode.rotation.z = 0;}
+        }
     }
 
-    // Update the position of the trailer
-    trailer.position.copy(trailerPosition);
+    if (keys[83] || keys[87]) {
+        for (let i = 0; i < legNodes.length; i++) {
+            let legNode = legNodes[i];
+            if (legNode.rotation.z <= Math.PI / 2 && legNode.rotation.z >= 0) {
+                legNode.rotation.z += (keys[83] - keys[87]) * rotationSpeed;
+            }
+            else if (legNode.rotation.z > Math.PI / 2) {legNode.rotation.z = Math.PI / 2;}
+            else if (legNode.rotation.z < 0) {legNode.rotation.z = 0;}
+        }
+    }
+
+    // if (keys[65] === 0 && keys[81] === 0) {
+    //     for (let i = 0; i < footNodes.length; i++) {
+    //         let footNode = footNodes[i];
+    //         if (footNode.rotation.z > 0) {
+    //             footNode.rotation.z -= rotationSpeed;
+    //         }
+    //     }
+    // }
+
+    if(keys[39] || keys[38] || keys[37] || keys[40])
+        trailer.position.add(
+            new THREE.Vector3(keys[40] - keys[38], 0, keys[37] - keys[39]).
+            normalize().
+            multiplyScalar(trailerSpeed)
+        )
 }
 
 /////////////
@@ -206,7 +364,7 @@ function init() {
     createCamera();
     camera = camera1;
 
-    createTrailer(0,8,0);
+    createTrailer(40,0,0);
     createRobot(0,0,0);
 
 
@@ -283,19 +441,8 @@ function onKeyDown(e){
                     }
                 });
                 break;
-            case 37: // Left arrow key
-                leftKeyPressed = true;
-                break;
-            case 39: // Right arrow key
-                rightKeyPressed = true;
-                break;
-            case 38: // Up arrow key
-                upKeyPressed = true;
-                break;
-            case 40: // Down arrow key
-                downKeyPressed = true;
-                break;
         }
+    keys[e.keyCode] = 1;
 }
 ///////////////////////
 /* KEY UP CALLBACK */
@@ -303,20 +450,7 @@ function onKeyDown(e){
 function onKeyUp(e){
     'use strict';
 
-    switch(e.keyCode){
-        case 37: // Left arrow key
-            leftKeyPressed = false;
-            break;
-        case 39: // Right arrow key
-            rightKeyPressed = false;
-            break;
-        case 38: // Up arrow key
-            upKeyPressed = false;
-            break;
-        case 40: // Down arrow key
-            downKeyPressed = false;
-            break;
-    }
+    keys[e.keyCode] = 0;
 
 }
 
