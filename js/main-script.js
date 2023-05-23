@@ -4,13 +4,33 @@
 var scene, renderer, clock, deltaTime, totalTime, camera, camera1, camera2, camera3, camera4, camera5;
 var trailer = new THREE.Object3D();
 var robot = new THREE.Object3D();
+var head = new THREE.Object3D();
+var eye1 = new THREE.Object3D();
+var eye2 = new THREE.Object3D();
+var antena1 = new THREE.Object3D();
+var antena2 = new THREE.Object3D();
+var shoulder1 = new THREE.Object3D();
+var shoulder2 = new THREE.Object3D();
+var arm1 = new THREE.Object3D();
+var arm2 = new THREE.Object3D();
+var forearm1 = new THREE.Object3D();
+var forearm2 = new THREE.Object3D();
+var thigh1 = new THREE.Object3D();
+var thigh2 = new THREE.Object3D();
+var leg1 = new THREE.Object3D();
+var leg2 = new THREE.Object3D();
+var foot1 = new THREE.Object3D();
+var foot2 = new THREE.Object3D();
+var wheel1 = new THREE.Object3D();
+var wheel2 = new THREE.Object3D();
+var wheel3 = new THREE.Object3D();
+var wheel4 = new THREE.Object3D();
 var trailerPosition = new THREE.Vector3(40, 0, 0);
 const trailerSpeed = 0.5;
 var rotationSpeed = Math.PI / 180; // Rotation speed in radians per frame
 var keys = Array(256).fill(0);
 
 var footNodes = [];
-var legNodes = [];
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -24,6 +44,7 @@ function createScene(){
     scene.add(new THREE.AxisHelper(100));
 
 }
+
 
 //////////////////////
 /* CREATE CAMERA(S) */
@@ -204,10 +225,8 @@ function addThigh(obj, x, y, z) {
     let geometry = new THREE.BoxGeometry(6, 16, 6);
     let material = new THREE.MeshBasicMaterial({ color: 0xedeade, wireframe: false });
     let mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
+    mesh.position.set(x, y, z); 
     obj.add(mesh);
-
-    legNodes.push(mesh);
 }
 
 function addLeg(obj, x, y, z) {
@@ -240,7 +259,7 @@ function createTrailer(x, y, z) {
     addWheel(trailer, 55, 3, 8);
     addWheel(trailer, 65, 3, 8);
     addWheel(trailer, 65, 3, -8);
-    addLinkPiece(trailer, 56, 3.5, 0); // Missing link piece object in trailer 
+    addLinkPiece(trailer, 56, 3.5, 0); 
 
     scene.add(trailer);
     trailer.position.x = x;
@@ -251,34 +270,62 @@ function createTrailer(x, y, z) {
 function createRobot(x, y, z) {
     'use strict';
 
-    addHead(robot, 0, 22.5, 0);
-    addEye(robot, -2, 22.5, 1);
-    addEye(robot, -2, 22.5, -1);
-    addAntena(robot, 0, 25.5, 1);
-    addAntena(robot, 0, 25.5, -1);
-    addShoulder(robot, 0, 19, 11);
-    addShoulder(robot, 0, 19, -11);
-    addArm(robot, 0, 15, 13.5);
-    addArm(robot, 0, 15, -13.5);
+    let headPivot = new THREE.Object3D();
+    headPivot.position.set(2.5, 20, 0);
+    scene.add(headPivot);
+    let thighPivot = new THREE.Object3D();
+    thighPivot.position.set(0, 2.5, 0);
+    scene.add(thighPivot);
+
+    addHead(head, 0, 2.5, 0); 
+    headPivot.add(head);
+    addEye(eye1, -2, 2.5, 1);
+    head.add(eye1);
+    addEye(eye2, -2, 2.5, -1);
+    head.add(eye2);
+    addAntena(antena1, 0, 5.5, 1);
+    head.add(antena1);
+    addAntena(antena2, 0, 5.5, -1);
+    head.add(antena2);
+    addShoulder(shoulder1, 0, 19, 11);
+    robot.add(shoulder1);
+    addShoulder(shoulder2, 0, 19, -11);
+    robot.add(shoulder2);
+    addArm(arm1, 0, 15, 13.5);
+    shoulder1.add(arm1);
+    addArm(arm2, 0, 15, -13.5);
+    shoulder2.add(arm2);
     // addExhaustPipe(robot, 0, 32, 10);
     // addExhaustPipe(robot, 0, 32, -10);
-    addForearm(robot, -5, 8, 13.5);
-    addForearm(robot, -5, 8, -13.5);
+    addForearm(forearm1, -5, 8, 13.5);
+    arm1.add(forearm1);
+    addForearm(forearm2, -5, 8, -13.5);
+    arm2.add(forearm2);
     addTorso(robot, 0, 15, 0);
     addAbdomen(robot, 0, 7.5, 0);
     addWaist(robot, 0, 2.5, 0);
     addWheel(robot, 0, 2.5, 11.5)
     addWheel(robot, 0, 2.5, -11.5)
-    addThigh(robot, 0, -8, 6);
-    addThigh(robot, 0, -8, -6);
-    addLeg(robot, 0, -23, 6);
-    addWheel(robot, 0, -20, 11.5);
-    addWheel(robot, 0, -28, 11,5);
-    addLeg(robot, 0, -23, -6);
-    addWheel(robot, 0, -20, -11.5);
-    addWheel(robot, 0, -28, -11,5);
-    addFoot(robot, -1, -31, 6);
-    addFoot(robot, -1, -31, -6);
+    addThigh(thigh1, 0, -8, 6);
+    thighPivot.add(thigh1);
+    addThigh(thigh2, 0, -8, -6);
+    thighPivot.add(thigh2);
+    addLeg(leg1, 0, -23, 6);
+    thigh1.add(leg1);
+    addWheel(wheel1, 0, -20, 11.5);
+    leg1.add(wheel1);
+    addWheel(wheel2, 0, -28, 11,5);
+    leg1.add(wheel2);
+    addLeg(leg2, 0, -23, -6);
+    thigh2.add(leg2);
+    addWheel(wheel3, 0, -20, -11.5);
+    leg1.add(wheel3);
+    addWheel(wheel4, 0, -28, -11,5);
+    leg1.add(wheel4);
+    addFoot(foot1, -1, -31, 6);
+    leg1.add(foot1);
+    addFoot(foot2, -1, -31, -6);
+    leg2.add(foot2);
 
 
     scene.add(robot);
@@ -314,24 +361,85 @@ function update(){
     }
 
     if (keys[83] || keys[87]) {
-        for (let i = 0; i < legNodes.length; i++) {
-            let legNode = legNodes[i];
-            if (legNode.rotation.z <= Math.PI / 2 && legNode.rotation.z >= 0) {
-                legNode.rotation.z += (keys[83] - keys[87]) * rotationSpeed;
+        for (let i = 0; i < 2; i++) {
+            let thigh = thigh1; 
+            if (i == 1) {thigh = thigh2;}
+            if (thigh.rotation.z <= Math.PI / 2 && thigh.rotation.z >= 0) {
+                thigh.rotation.z += (keys[83] - keys[87]) * rotationSpeed;
             }
-            else if (legNode.rotation.z > Math.PI / 2) {legNode.rotation.z = Math.PI / 2;}
-            else if (legNode.rotation.z < 0) {legNode.rotation.z = 0;}
+            else if (thigh.rotation.z > Math.PI / 2) {thigh.rotation.z = Math.PI / 2;}
+            else if (thigh.rotation.z < 0) {thigh.rotation.z = 0;}
         }
     }
 
-    // if (keys[65] === 0 && keys[81] === 0) {
-    //     for (let i = 0; i < footNodes.length; i++) {
-    //         let footNode = footNodes[i];
-    //         if (footNode.rotation.z > 0) {
-    //             footNode.rotation.z -= rotationSpeed;
-    //         }
-    //     }
-    // }
+    if (keys[82] || keys[70]) {
+        if ((head).rotation.z >= -Math.PI && head.rotation.z <= 0) {
+            head.rotation.z += (keys[82] - keys[70]) * rotationSpeed * 2;
+        }
+        else if (head.rotation.z < -Math.PI) {head.rotation.z = -Math.PI;}
+        else if (head.rotation.z > 0) {head.rotation.z = 0;}
+    }
+
+    if (keys[68]) {
+        // Translate arms 
+        for (let i = 0; i < 2; i++) {
+            let shoulder = shoulder1; 
+            if (i == 1) {shoulder = shoulder2;}
+            if (!shoulder.originalPosition) {
+                // Store the original position if not already stored
+                shoulder.originalPosition = shoulder.position.clone();
+            }
+            
+            // Set the target position for translation
+            let targetPositionX = 6.5; 
+            let targetPositionZ = -5.5; 
+            if (i == 1) {targetPositionZ = 5.5;}
+            
+            let translationSpeed = 0.1; 
+            
+            // Move the arm towards the target position
+            if (shoulder.position.x < targetPositionX) {
+                shoulder.position.x += translationSpeed;
+            } else {
+                shoulder.position.x = targetPositionX;
+            }
+            
+            if ((i == 0 && shoulder.position.z > targetPositionZ) || (i == 1 && shoulder.position.z < targetPositionZ)) {
+                if(i==0) {shoulder.position.z -= translationSpeed;}
+                if(i==1) {shoulder.position.z += translationSpeed;}
+            } else {
+                shoulder.position.z = targetPositionZ;
+            }
+        }
+    }
+    
+    if (keys[69]) {
+        // Translate arms back to the original position
+        for (let i = 0; i < 2; i++) {
+            let shoulder = shoulder1; 
+            if (i == 1) {shoulder = shoulder2;}
+            if (shoulder.originalPosition) {
+                // Move the arm towards the original position
+                let originalPositionX = shoulder.originalPosition.x;
+                let originalPositionZ = shoulder.originalPosition.z;
+                let translationSpeed = 0.1; 
+                
+                if (shoulder.position.x > originalPositionX) {
+                    shoulder.position.x -= translationSpeed;
+                } else {
+                    shoulder.position.x = originalPositionX;
+                }
+                
+                if ((i == 0 && shoulder.position.z < originalPositionZ) || (i == 1 && shoulder.position.z > originalPositionZ)) {
+                    if(i==0) {shoulder.position.z += translationSpeed;}
+                    if(i==1) {shoulder.position.z -= translationSpeed;}
+                } else {
+                    shoulder.position.z = originalPositionZ;
+                    shoulder.originalPosition = undefined; // Reset the stored original position
+                }
+            }
+        }
+    }
 
     if(keys[39] || keys[38] || keys[37] || keys[40])
         trailer.position.add(
@@ -453,4 +561,3 @@ function onKeyUp(e){
     keys[e.keyCode] = 0;
 
 }
-
