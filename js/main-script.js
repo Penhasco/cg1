@@ -33,6 +33,15 @@ const trailerSpeed = 0.5;
 var rotationSpeed = Math.PI / 180; // Rotation speed in radians per frame
 var keys = Array(256).fill(0);
 var isKeyBeingPressed = false;
+var feetModeTruck = false;
+var legsModeTruck = false;
+var armsModeTruck = false;
+var headModeTruck = false;
+var trailerMin = new THREE.Vector3(-30, -10, -10);
+var trailerMax = new THREE.Vector3(+30, 10, 10);
+var robotMin = new THREE.Vector3(-44, -5, -13);
+var robotMax = new THREE.Vector3(1, 25, 13);
+var trailerAnimation = false;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -42,8 +51,6 @@ function createScene(){
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
-
-    scene.add(new THREE.AxisHelper(100)); //REMOVE this before deliver
 
 }
 
@@ -340,13 +347,59 @@ function createRobot(x, y, z) {
     robot.position.z = z;
 }
 
+function isTruckMode(){
+    if(feetModeTruck && legsModeTruck && armsModeTruck && headModeTruck) {return true;}
+    return false;
+}
+
+///////////////////////
+/* CHECKS COLLISIONS */
+///////////////////////
+function checkCollisionsAux(){
+    'use strict';
+    if (trailer.position.x + trailerMax.x > robotMin.x &&
+        trailer.position.x + trailerMin.x < robotMax.x &&
+        trailer.position.y + trailerMax.y > robotMin.y &&
+        trailer.position.y + trailerMin.y < robotMax.y &&
+        trailer.position.z + trailerMax.z > robotMin.z &&
+        trailer.position.z + trailerMin.z < robotMax.z &&
+        isTruckMode() == true) {
+        return true;
+    }
+    return false;
+}
+
+function checkCollisions(){
+    'use strict';
+    if (checkCollisionsAux() == true) {
+        trailerAnimation = true;
+        handleCollisions();
+    }
+}
 
 ///////////////////////
 /* HANDLE COLLISIONS */
 ///////////////////////
 function handleCollisions(){
     'use strict';
+    returnTrailerToBegining();
+}
 
+function returnTrailerToBegining(){
+    let targetPositionX = 0;
+    let targetPositionZ = 0;
+    let translationSpeed = 0.1; 
+
+    if (trailer.position.x < 0.1 && trailer.position.x > -0.1) {trailer.position.x = 0;}
+    if (trailer.position.x > targetPositionX) {trailer.position.x -= translationSpeed;}
+    if (trailer.position.x < targetPositionX) {trailer.position.x += translationSpeed;}
+    if (trailer.position.z < 0.1 && trailer.position.z > -0.1) {trailer.position.z = 0;}
+    if (trailer.position.z > targetPositionZ) {trailer.position.z -= translationSpeed;}
+    if (trailer.position.z < targetPositionZ) {trailer.position.z += translationSpeed;}
+
+    if (trailer.position.x === targetPositionX && trailer.position.z === targetPositionZ) {
+        trailerAnimation = false;
+    }
 }
 
 ////////////
@@ -363,7 +416,8 @@ function update(){
             if (foot.rotation.z <= Math.PI / 2 && foot.rotation.z >= 0) {
                 foot.rotation.z += (keys[65] - keys[81]) * rotationSpeed;
             }
-            if (foot.rotation.z > Math.PI / 2) {foot.rotation.z = Math.PI / 2;}
+            if (foot.rotation.z > Math.PI / 2) {foot.rotation.z = Math.PI / 2; feetModeTruck = true;}
+            if (foot.rotation.z < Math.PI / 2) {feetModeTruck = false;}
             if (foot.rotation.z < 0) {foot.rotation.z = 0;}
         }
     }
@@ -376,7 +430,8 @@ function update(){
             if (thigh.rotation.z <= Math.PI / 2 && thigh.rotation.z >= 0) {
                 thigh.rotation.z += (keys[83] - keys[87]) * rotationSpeed;
             }
-            if (thigh.rotation.z > Math.PI / 2) {thigh.rotation.z = Math.PI / 2;}
+            if (thigh.rotation.z > Math.PI / 2) {thigh.rotation.z = Math.PI / 2; legsModeTruck = true;}
+            if (thigh.rotation.z < Math.PI / 2) {legsModeTruck = false;}
             if (thigh.rotation.z < 0) {thigh.rotation.z = 0;}
         }
     }
@@ -386,7 +441,8 @@ function update(){
         if ((head).rotation.z >= -Math.PI && head.rotation.z <= 0) {
             head.rotation.z += (keys[82] - keys[70]) * rotationSpeed * 2;
         }
-        if (head.rotation.z < -Math.PI) {head.rotation.z = -Math.PI;}
+        if (head.rotation.z < -Math.PI) {head.rotation.z = -Math.PI; headModeTruck = true;}
+        if (head.rotation.z > -Math.PI) {headModeTruck = false;}
         if (head.rotation.z > 0) {head.rotation.z = 0;}
     }
 
@@ -415,7 +471,7 @@ function update(){
                 if(i==0) {shoulder.position.z -= translationSpeed;}
                 if(i==1) {shoulder.position.z += translationSpeed;}
             } else {
-                shoulder.position.z = targetPositionZ;
+                shoulder.position.z = targetPositionZ; armsModeTruck = true;
             }
         }
     }
@@ -432,6 +488,7 @@ function update(){
                 
                 if (shoulder.position.x > originalPositionX) {
                     shoulder.position.x -= translationSpeed;
+                    armsModeTruck = false;
                 } else {
                     shoulder.position.x = originalPositionX;
                 }
@@ -485,13 +542,7 @@ function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-      // Check if the canvas container element exists
-    var canvasContainer = document.getElementById('canvas-container');
-    if (canvasContainer) {
-        canvasContainer.appendChild(renderer.domElement);
-    } else {
-        console.error("The 'canvas-container' element was not found.");
-    }
+    window.document.body.appendChild(renderer.domElement);
 
     window.addEventListener("resize", onResize);
     window.addEventListener("keyup", onKeyUp);
@@ -508,6 +559,7 @@ function init() {
 function animate() {
     'use strict';
 
+    checkCollisions();
     requestAnimationFrame(animate);
     update();
     render();
@@ -540,36 +592,38 @@ function toggleWireframeMode(object) {
 ///////////////////////
 /* KEY DOWN CALLBACK */
 ///////////////////////
-
-
 function onKeyDown(e){
     'use strict';
+    if (checkCollisionsAux() == false && trailerAnimation == true) {trailerAnimation = false;}
+    if (trailerAnimation) {return;}
 
-        switch(e.keyCode){
-            case 49:
-                camera = camera1;
-                break;
-            case 50:
-                camera = camera2;
-                break;
-            case 51:
-                camera = camera3;
-                break;
-            case 52:
-                camera = camera4;
-                break;
-            case 53:
-                camera = camera5;
-                break;
-            case 54: 
-                if (!isKeyBeingPressed){
-                    isKeyBeingPressed = true;
-                    toggleWireframeMode(scene);
-                }
-                break;
+    switch(e.keyCode){
+        case 49:
+            camera = camera1;
+            break;
+        case 50:
+            camera = camera2;
+            break;
+        case 51:
+            camera = camera3;
+            break;          
+        case 52:
+            camera = camera4;
+            break;
+        case 53:
+            camera = camera5;
+            break;
+        case 54: 
+            if (!isKeyBeingPressed){
+                isKeyBeingPressed = true;
+                toggleWireframeMode(scene);
+            }
+            break;
         }
+    
     keys[e.keyCode] = 1;
 }
+
 ///////////////////////
 /* KEY UP CALLBACK */
 ///////////////////////
