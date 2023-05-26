@@ -518,7 +518,6 @@ function update(){
 function render() {
     'use strict';
     renderer.render(scene, camera);
-
 }
 
 ////////////////////////////////
@@ -526,10 +525,6 @@ function render() {
 ////////////////////////////////
 function init() {
     'use strict';
-
-    clock = new THREE.Clock();
-    deltaTime = 0;
-    totalTime = 0;
     
     createScene();
     createCamera();
@@ -587,7 +582,7 @@ function toggleWireframeMode(object) {
         toggleWireframeMode(object.children[i]);
       }
     }
-  }
+}
   
 ///////////////////////
 /* KEY DOWN CALLBACK */
